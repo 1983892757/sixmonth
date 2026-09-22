@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>❤️ 六个月纪念日 · 刮刮乐 ❤️</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #fef5f0;
+    font-family: system-ui, -apple-system, 'Microsoft YaHei', sans-serif;
+    color: #4a2e2a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ===== 史迪仔装饰（与一个月纪念日一致）===== */
+  .stitch-deco {
+    position: fixed;
+    bottom: 20px;
+    right: 10px;
+    width: 80px;
+    opacity: 0.6;
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 0;
+  }
+  .stitch-deco-left {
+    position: fixed;
+    top: 100px;
+    left: 0px;
+    width: 60px;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .stitch-deco-top {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 70px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @media (max-width: 600px) {
+    .stitch-deco { width: 60px; bottom: 10px; right: 5px; }
+    .stitch-deco-left { width: 45px; top: 80px; }
+    .stitch-deco-top { width: 50px; }
+  }
+
+  /* ===== 解锁界面 ===== */
+  .lock-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    z-index: 1;
+  }
+  .lock-card {
+    background: white;
+    border-radius: 48px;
+    padding: 40px 24px;
+    box-shadow: 0 20px 35px -10px rgba(0,0,0,0.05);
+    width: 100%;
+  }
+  .lock-card h2 {
+    color: #d46b5e;
+    margin-bottom: 12px;
+    font-size: 1.6rem;
+  }
+  .lock-card p {
+    color: #b97f72;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .code-input {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    text-align: center;
+    letter-spacing: 2px;
+    border: 2px solid #ffe0d4;
+    border-radius: 60px;
+    background: #fffaf7;
+    outline: none;
+    transition: 0.2s;
+    color: #4a2e2a;
+  }
+  .code-input:focus { border-color: #d46b5e; }
+  .unlock-btn {
+    background: #d46b5e;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    font-size: 1rem;
+    border-radius: 60px;
+    margin-top: 18px;
+    width: 100%;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .unlock-btn:active { transform: scale(0.97); background: #b85c50; }
+  .unlock-btn:disabled { background: #c9aca2; cursor: not-allowed; }
+  .error-msg {
+    color: #e07c5c;
+    margin-top: 14px;
+    font-size: 0.85rem;
+    min-height: 20px;
+  }
+
+  /* ===== 主界面 ===== */
+  .main-content {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    z-index: 1;
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: #d46b5e;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .sub {
+    font-size: 0.8rem;
+    color: #b97f72;
+    margin-bottom: 12px;
+    text-align: center;
+    white-space: pre-line;
+    line-height: 1.5;
+  }
+  .chances-badge {
+    background: #fff0e8;
+    color: #b85c50;
+    font-size: 0.85rem;
+    padding: 7px 18px;
+    border-radius: 40px;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .chances-badge span {
+    color: #d46b5e;
+    font-size: 1.1rem;
+  }
+
+  /* 刮刮乐卡片 */
+  .scratch-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .scratch-card {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(212,107,94,0.15);
+    background: #fffaf7;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .scratch-card.show { display: block; }
+  .scratch-canvas {
+    display: block;
+    width: 100%;
+    border-radius: 24px;
+    touch-action: none;
+    cursor: pointer;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .spin-btn {
+    background: #d46b5e;
+    color: white;
+    border: none;
+    padding: 13px 40px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 60px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(212,107,94,0.3);
+    transition: 0.2s;
+  }
+  .spin-btn:active { transform: scale(0.96); background: #b85c50; }
+  .spin-btn:disabled { background: #c9aca2; box-shadow: none; cursor: not-allowed; }
+  .spin-btn.secondary {
+    background: #fff0e8;
+    color: #b85c50;
+    box-shadow: none;
+    border: 1px solid #ffe0d4;
+  }
+  .spin-btn.secondary:active { background: #ffe0d4; }
+
+  .result {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #d46b5e;
+    text-align: center;
+    min-height: 26px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+
+  /* 我的奖励 */
+  .my-rewards {
+    width: 100%;
+    background: white;
+    border-radius: 28px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+    margin-bottom: 16px;
+  }
+  .my-rewards h3 {
+    color: #d46b5e;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .reward-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .reward-tag {
+    background: #fff0e8;
+    color: #b85c50;
+    font-size: 0.8rem;
+    padding: 6px 14px;
+    border-radius: 40px;
+    border: 1px solid #ffe0d4;
+    white-space: pre-line;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .reward-tag.egg {
+    background: linear-gradient(135deg, #ffe0d4, #ffd0c0);
+    border-color: #d46b5e;
+    color: #b85c50;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(212,107,94,0.2);
+  }
+  .reward-empty {
+    color: #c9aca2;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  /* ===== 作弊码区域 ===== */
+  .cheat-area {
+    padding: 16px;
+    background: white;
+    border-radius: 28px;
+    width: 100%;
+    display: none;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+    margin-bottom: 16px;
+  }
+  .cheat-area p {
+    color: #b85c50;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .cheat-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    border: 2px solid #ffe0d4;
+    border-radius: 40px;
+    background: #fffaf7;
+    margin-bottom: 10px;
+    outline: none;
+    text-align: center;
+  }
+  .cheat-input:focus { border-color: #d46b5e; }
+  .cheat-btn {
+    background: #b85c50;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    width: 100%;
+    font-weight: 600;
+  }
+  .cheat-hint {
+    font-size: 0.7rem;
+    color: #c9aca2;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .cheat-used-list {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .cheat-used-tag {
+    background: #f0e2db;
+    color: #b0a6a2;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 30px;
+    text-decoration: line-through;
+  }
+
+  /* ===== 弹窗 ===== */
+  .popup-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(74,46,42,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .popup-mask.show { display: flex; }
+  .popup {
+    background: #fffaf7;
+    border-radius: 32px;
+    padding: 28px 28px 32px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    animation: popIn 0.3s ease;
+    position: relative;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .popup-stitch {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin: 0 auto 8px;
+    display: none;
+  }
+  .popup-stitch.show { display: block; }
+  .popup .emoji { font-size: 2.2rem; }
+  .popup h2 { color: #d46b5e; font-size: 1.1rem; margin: 10px 0; }
+  .popup .reward {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #b85c50;
+    margin: 14px 0;
+    line-height: 1.4;
+    white-space: pre-line;
+  }
+  .popup .tip { font-size: 0.78rem; color: #b97f72; margin-bottom: 18px; line-height: 1.5; }
+  .popup .ok-btn {
+    background: #d46b5e;
+    color: white;
+    border: none;
+    padding: 11px 38px;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #d46b5e;
+    color: white;
+    padding: 11px 22px;
+    border-radius: 60px;
+    font-size: 0.85rem;
+    z-index: 200;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: fadeOut 3s forwards;
+    max-width: 90vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @keyframes fadeOut {
+    0% { opacity: 1; transform: translateX(-50%) scale(1); }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(-50%) scale(0.9); visibility: hidden; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 史迪仔装饰（三只）-->
+<img class="stitch-deco" id="stitchDeco" src="https://s1.aigei.com/src/img/png/6b/6b61b7d426794111b5f78a57c7822afa.png?imageMogr2/auto-orient/thumbnail/!282x282r/gravity/Center/crop/282x282/quality/85/%7CimageView2/2/w/282&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:T8O18yf0RDCL7t0EO_qD3Q1AXgw=" alt="史迪仔">
+<img class="stitch-deco-left" src="https://s1.aigei.com/src/img/png/23/231af1e1df8e461aa9c9782bb4fcaeea.png?imageMogr2/auto-orient/thumbnail/!226x282r/gravity/Center/crop/226x282/quality/85/&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:7btznNagXBlLODVmB10iFA661no=" alt="史迪仔">
+<img class="stitch-deco-top" src="https://s1.aigei.com/src/img/png/04/04fd3215c4a242b5a708367d3475fe7a.png?imageMogr2/auto-orient/thumbnail/!282x282r/gravity/Center/crop/282x282/quality/85/%7CimageView2/2/w/282&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:K0wsMixzr-5F5zR3pAz_RkrGY4w=" alt="史迪仔">
+
+<!-- ===== 解锁界面 ===== -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <h2>🔐 六个月纪念日</h2>
+    <p>宝宝输入暗号<br>打开潘多拉宝盒</p>
+    <input type="text" id="codeInput" class="code-input" placeholder="取件码" autocomplete="off">
+    <button id="unlockButton" class="unlock-btn">✨ 开启 ✨</button>
+    <div id="errorMsg" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- ===== 主界面 ===== -->
+<div class="main-content" id="mainContent">
+  <h1>❤️ 六个月纪念日 · 刮刮乐 ❤️</h1>
+  <div class="sub">宝宝有你真好
+里面会有什么呢🧐？</div>
+  <div class="chances-badge">剩余机会：<span id="chancesLeft">6</span> 次</div>
+
+  <div class="scratch-container" id="scratchContainer">
+    <div class="scratch-card" id="scratchCard">
+      <canvas class="scratch-canvas" id="scratchCanvas" width="360" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="spin-btn" id="newCardBtn">🎫 刮一张</button>
+    <button class="spin-btn secondary" id="revealBtn" style="display:none;">👀 直接刮开</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <div class="my-rewards">
+    <h3>🎁 我的奖励</h3>
+    <div class="reward-list" id="rewardList">
+      <div class="reward-empty">还没有刮到奖励哦～</div>
+    </div>
+  </div>
+
+  <div class="cheat-area" id="cheatArea">
+    <p>机会用完了～ 输入作弊码获得一次机会</p>
+    <input type="text" id="cheatCodeInput" class="cheat-input" placeholder="输入作弊码...">
+    <button id="cheatBtn" class="cheat-btn">🐣 使用作弊码</button>
+    <div class="cheat-hint">每个作弊码只能用一次哦～</div>
+    <div class="cheat-used-list" id="cheatUsedList"></div>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div class="popup-mask" id="popupMask">
+  <div class="popup">
+    <img class="popup-stitch" id="popupStitch" src="" alt="史迪仔">
+    <div class="emoji" id="popupEmoji">🎉</div>
+    <h2 id="popupTitle">刮到啦！</h2>
+    <div class="reward" id="popupReward"></div>
+    <div class="tip" id="popupTip">好耶～</div>
+    <button class="ok-btn" id="okBtn">好的！</button>
+  </div>
+</div>
+
+<script>
+// ================= 可自定义区域 =================
+const ALL_REWARDS = [
+  "抱抱一个",
+  "亲亲一下😘",
+  "下载金铲铲🤧",
+  "V我50🤑",
+  "亲亲*100😗😙😚",
+  "帮你洗袜子🙃",
+  "帮我洗袜子🤣",
+  "壹元乐享🤩",
+  "清空抖音yf🧐",
+  "清空花呗🤐",
+  "清空美团月付🤔",
+  "宝宝说的\n我都听😘"
+];
+
+const CHEAT_CODES = [
+  "求求宝宝再给一次机会",
+  "宝宝最好了",
+  "爱你",
+  "六个月快乐",
+  "亲亲",
+  "抱抱",
+  "宝宝"
+  "晚安宝宝"
+  "哈哈哈"
+];
+
+// 彩蛋定义（每个彩蛋配一张不同的史迪仔图片）
+const EGGS = {
+  6: {
+    emoji: "💌",
+    title: "隐藏彩蛋 1/3",
+    reward: "宝宝",
+    tip: "来咯",
+    stitchImg: "https://s1.aigei.com/src/img/png/6e/6e98b88406124a5ca2cba07059bdeb80.png?imageMogr2/auto-orient/thumbnail/!560x560r/gravity/Center/crop/560x560/quality/85/%7CimageView2/2/w/560&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:5CkYz8tTakHdXsPuQKo0WEgoQN4="
+  },
+  8: {
+    emoji: "🏆",
+    title: "隐藏彩蛋 2/3",
+    reward: "宝宝",
+    tip: "我的礼物呢",
+    stitchImg: "https://s1.aigei.com/src/img/png/8f/8f9eb94761df441dac3f166761a70bbb.png?imageMogr2/auto-orient/thumbnail/!560x560r/gravity/Center/crop/560x560/quality/85/%7CimageView2/2/w/560&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:sakaUx_ABuypakfqXvHsrikaKNw="
+	},
+  10: {
+    emoji: "💎",
+    title: "终极彩蛋 3/3",
+    reward: "秘密",
+    tip: "💪",
+    stitchImg: "https://s1.aigei.com/src/img/png/04/04fd3215c4a242b5a708367d3475fe7a.png?e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:Cbgu0opOS16Dh1X_SCKoW2gXGOs="
+	}
+};
+
+const today = new Date();
+const month = String(today.getMonth() + 1).padStart(2, '0');
+const day = String(today.getDate()).padStart(2, '0');
+const CORRECT_CODE = `1-1-${month}${day}`;
+
+const INITIAL_CHANCES = 6;
+// ===============================================
+
+
+const scratchCard = document.getElementById('scratchCard');
+const scratchCanvas = document.getElementById('scratchCanvas');
+const scratchCtx = scratchCanvas.getContext('2d');
+const newCardBtn = document.getElementById('newCardBtn');
+const revealBtn = document.getElementById('revealBtn');
+const resultEl = document.getElementById('result');
+const chancesLeftEl = document.getElementById('chancesLeft');
+const rewardListEl = document.getElementById('rewardList');
+const cheatArea = document.getElementById('cheatArea');
+const cheatCodeInput = document.getElementById('cheatCodeInput');
+const cheatBtn = document.getElementById('cheatBtn');
+const cheatUsedList = document.getElementById('cheatUsedList');
+const popupMask = document.getElementById('popupMask');
+const popupStitch = document.getElementById('popupStitch');
+const popupEmoji = document.getElementById('popupEmoji');
+const popupTitle = document.getElementById('popupTitle');
+const popupReward = document.getElementById('popupReward');
+const popupTip = document.getElementById('popupTip');
+const okBtn = document.getElementById('okBtn');
+const stitchDeco = document.getElementById('stitchDeco');
+
+let remainingChances = INITIAL_CHANCES;
+let totalSpins = 0;
+let drawnRewards = [];
+let usedCheatCodes = [];
+let currentReward = null;
+let currentIsEgg = false;
+let currentEggData = null;
+let isScratching = false;
+let isRevealed = false;
+let lastX = 0, lastY = 0;
+
+function updateDisplay() {
+  chancesLeftEl.textContent = remainingChances;
+  if (remainingChances <= 0) {
+    newCardBtn.disabled = true;
+    cheatArea.style.display = 'block';
+  } else {
+    newCardBtn.disabled = false;
+    cheatArea.style.display = 'none';
+  }
+  renderRewardList();
+  renderCheatUsedList();
+}
+
+function renderRewardList() {
+  if (drawnRewards.length === 0) {
+    rewardListEl.innerHTML = '<div class="reward-empty">还没有刮到奖励哦～</div>';
+    return;
+  }
+  rewardListEl.innerHTML = drawnRewards.map(r =>
+    `<div class="reward-tag${r.isEgg ? ' egg' : ''}">${r.text.replace(/\n/g, '<br>')}</div>`
+  ).join('');
+}
+
+function renderCheatUsedList() {
+  if (usedCheatCodes.length === 0) {
+    cheatUsedList.innerHTML = '';
+    return;
+  }
+  cheatUsedList.innerHTML = usedCheatCodes.map(c =>
+    `<div class="cheat-used-tag">${c}</div>`
+  ).join('');
+}
+
+function createScratchCard() {
+  const nextSpinNum = totalSpins + 1;
+
+  if (EGGS[nextSpinNum]) {
+    currentIsEgg = true;
+    currentEggData = EGGS[nextSpinNum];
+    currentReward = currentEggData.reward;
+  } else {
+    const drawnTexts = drawnRewards.map(d => d.text);
+    const available = ALL_REWARDS.filter(r =>
+      r === "壹元乐享🤩" || !drawnTexts.includes(r)
+    );
+    if (available.length === 0) {
+      showToast('所有奖励都刮完啦！');
+      return;
+    }
+    currentIsEgg = false;
+    currentEggData = null;
+    currentReward = available[Math.floor(Math.random() * available.length)];
+  }
+
+  isRevealed = false;
+  isScratching = false;
+
+  scratchCard.classList.add('show');
+  newCardBtn.style.display = 'none';
+  revealBtn.style.display = 'inline-block';
+  resultEl.textContent = '';
+
+  scratchCtx.globalCompositeOperation = 'source-over';
+  scratchCtx.clearRect(0, 0, 360, 200);
+
+  scratchCtx.fillStyle = '#fffaf7';
+  scratchCtx.fillRect(0, 0, 360, 200);
+
+  scratchCtx.fillStyle = currentIsEgg ? '#ffe0d4' : '#fff0e8';
+  scratchCtx.fillRect(10, 10, 340, 180);
+
+  scratchCtx.fillStyle = '#d46b5e';
+  scratchCtx.font = 'bold 26px "Microsoft YaHei", sans-serif';
+  scratchCtx.textAlign = 'center';
+  scratchCtx.textBaseline = 'middle';
+
+  if (currentIsEgg) {
+    scratchCtx.font = '48px Arial';
+    scratchCtx.fillText(currentEggData.emoji, 180, 80);
+    scratchCtx.font = 'bold 22px "Microsoft YaHei", sans-serif';
+    scratchCtx.fillStyle = '#b85c50';
+    scratchCtx.fillText(currentEggData.title, 180, 135);
+  } else {
+    const lines = currentReward.split('\n');
+    lines.forEach((line, idx) => {
+      const offset = (idx - (lines.length - 1) / 2) * 34;
+      scratchCtx.fillText(line, 180, 100 + offset);
+    });
+  }
+
+  scratchCtx.fillStyle = '#b97f72';
+  scratchCtx.font = '13px "Microsoft YaHei", sans-serif';
+  scratchCtx.fillText('❤️ 六个月快乐 ❤️', 180, 170);
+
+  scratchCtx.globalCompositeOperation = 'source-over';
+  const gradient = scratchCtx.createLinearGradient(0, 0, 360, 200);
+  gradient.addColorStop(0, '#c8b8b0');
+  gradient.addColorStop(0.3, '#e0d0c8');
+  gradient.addColorStop(0.5, '#f0e4dc');
+  gradient.addColorStop(0.7, '#e0d0c8');
+  gradient.addColorStop(1, '#c8b8b0');
+  scratchCtx.fillStyle = gradient;
+  scratchCtx.fillRect(0, 0, 360, 200);
+
+  scratchCtx.fillStyle = 'rgba(255,255,255,0.1)';
+  for (let i = 0; i < 60; i++) {
+    const x = Math.random() * 360;
+    const y = Math.random() * 200;
+    scratchCtx.beginPath();
+    scratchCtx.arc(x, y, Math.random() * 8 + 2, 0, Math.PI * 2);
+    scratchCtx.fill();
+  }
+
+  scratchCtx.fillStyle = '#8a7a72';
+  scratchCtx.font = 'bold 18px "Microsoft YaHei", sans-serif';
+  scratchCtx.textAlign = 'center';
+  scratchCtx.textBaseline = 'middle';
+  scratchCtx.fillText('👆 用手指刮开', 180, 100);
+}
+
+function getPos(e) {
+  const rect = scratchCanvas.getBoundingClientRect();
+  const scaleX = scratchCanvas.width / rect.width;
+  const scaleY = scratchCanvas.height / rect.height;
+  let clientX, clientY;
+  if (e.touches && e.touches[0]) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+function scratchAt(x, y) {
+  scratchCtx.globalCompositeOperation = 'destination-out';
+  scratchCtx.beginPath();
+  scratchCtx.arc(x, y, 22, 0, Math.PI * 2);
+  scratchCtx.fill();
+}
+
+function startScratch(e) {
+  if (isRevealed) return;
+  e.preventDefault();
+  isScratching = true;
+  const pos = getPos(e);
+  lastX = pos.x;
+  lastY = pos.y;
+  scratchAt(pos.x, pos.y);
+}
+
+function moveScratch(e) {
+  if (!isScratching || isRevealed) return;
+  e.preventDefault();
+  const pos = getPos(e);
+  const dist = Math.hypot(pos.x - lastX, pos.y - lastY);
+  const steps = Math.ceil(dist / 8);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const x = lastX + (pos.x - lastX) * t;
+    const y = lastY + (pos.y - lastY) * t;
+    scratchAt(x, y);
+  }
+  lastX = pos.x;
+  lastY = pos.y;
+  checkReveal();
+}
+
+function endScratch() {
+  isScratching = false;
+}
+
+function checkReveal() {
+  if (isRevealed) return;
+  const imageData = scratchCtx.getImageData(0, 0, 360, 200);
+  const pixels = imageData.data;
+  let transparent = 0;
+  for (let i = 3; i < pixels.length; i += 16) {
+    if (pixels[i] === 0) transparent++;
+  }
+  const total = pixels.length / 16;
+  if (transparent / total > 0.5) {
+    revealAll();
+  }
+}
+
+function revealAll() {
+  if (isRevealed) return;
+  isRevealed = true;
+  scratchCtx.globalCompositeOperation = 'destination-out';
+  scratchCtx.fillRect(0, 0, 360, 200);
+  onScratchEnd();
+}
+
+function onScratchEnd() {
+  revealBtn.style.display = 'none';
+
+  totalSpins++;
+  remainingChances--;
+
+  if (currentIsEgg) {
+    drawnRewards.push({ text: currentReward, isEgg: true });
+    resultEl.textContent = currentEggData.emoji + " 彩蛋：" + currentEggData.title + " " + currentEggData.emoji;
+    updateDisplay();
+    showEggPopup(currentEggData);
+  } else {
+    resultEl.textContent = "🎉 恭喜你获得：" + currentReward + " 🎉";
+    if (currentReward === "壹元乐享🤩") {
+      remainingChances++;
+      showToast('刮到「壹元乐享🤩」！机会 +1');
+    } else {
+      drawnRewards.push({ text: currentReward, isEgg: false });
+    }
+    updateDisplay();
+
+    popupEmoji.textContent = "🎉";
+    popupTitle.textContent = "刮到啦！";
+    popupReward.textContent = currentReward;
+    popupTip.textContent = "好耶～";
+    popupStitch.classList.remove('show');
+    popupMask.classList.add('show');
+  }
+
+  setTimeout(() => {
+    newCardBtn.style.display = 'inline-block';
+    newCardBtn.textContent = '🎫 再刮一张';
+    scratchCard.classList.remove('show');
+    newCardBtn.disabled = remainingChances <= 0;
+    if (remainingChances <= 0) {
+      cheatArea.style.display = 'block';
+    }
+  }, 1200);
+}
+
+// 彩蛋弹窗（使用彩蛋自带的史迪仔图片）
+function showEggPopup(eggData) {
+  popupEmoji.textContent = eggData.emoji;
+  popupTitle.textContent = eggData.title;
+  popupReward.textContent = eggData.reward;
+  popupTip.textContent = eggData.tip;
+  popupStitch.src = eggData.stitchImg;
+  popupStitch.classList.add('show');
+  popupMask.classList.add('show');
+}
+
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// 史迪仔点击彩蛋
+let stitchClickCount = 0;
+stitchDeco.addEventListener('click', () => {
+  stitchClickCount++;
+  if (stitchClickCount === 1) {
+    showToast('🤫 嘘～ 别告诉别人你点了史迪仔～');
+  } else if (stitchClickCount === 3) {
+    showToast('😈 再点它就要变身了哦！');
+  } else if (stitchClickCount === 5) {
+    showToast('💥 宝宝是要亲一下嘛😙');
+    stitchClickCount = 0;
+  } else {
+    showToast('🐾 史迪仔打了个滚～');
+  }
+});
+
+scratchCanvas.addEventListener('mousedown', startScratch);
+scratchCanvas.addEventListener('mousemove', moveScratch);
+scratchCanvas.addEventListener('mouseup', endScratch);
+scratchCanvas.addEventListener('mouseleave', endScratch);
+
+scratchCanvas.addEventListener('touchstart', startScratch, { passive: false });
+scratchCanvas.addEventListener('touchmove', moveScratch, { passive: false });
+scratchCanvas.addEventListener('touchend', endScratch);
+
+newCardBtn.addEventListener('click', () => {
+  if (remainingChances <= 0) {
+    showToast('机会用完了，请输入作弊码～');
+    return;
+  }
+  createScratchCard();
+});
+
+revealBtn.addEventListener('click', () => {
+  if (!isRevealed && currentReward) {
+    revealAll();
+  }
+});
+
+okBtn.addEventListener('click', () => {
+  popupMask.classList.remove('show');
+  popupStitch.classList.remove('show');
+});
+popupMask.addEventListener('click', (e) => {
+  if (e.target === popupMask) {
+    popupMask.classList.remove('show');
+    popupStitch.classList.remove('show');
+  }
+});
+
+function useCheat() {
+  const cheat = cheatCodeInput.value.trim();
+  if (!cheat) {
+    showToast('请输入作弊码～');
+    return;
+  }
+  if (!CHEAT_CODES.includes(cheat)) {
+    showToast('作弊码不对哦，再想想～');
+    cheatCodeInput.value = '';
+    cheatCodeInput.focus();
+    return;
+  }
+  if (usedCheatCodes.includes(cheat)) {
+    showToast('这个作弊码已经用过了哦～换一个试试');
+    cheatCodeInput.value = '';
+    cheatCodeInput.focus();
+    return;
+  }
+  usedCheatCodes.push(cheat);
+  remainingChances++;
+  cheatCodeInput.value = '';
+  updateDisplay();
+  showToast('🐣 作弊码有效！机会 +1，加油～');
+  cheatCodeInput.focus();
+}
+
+cheatBtn.onclick = useCheat;
+cheatCodeInput.onkeypress = e => e.key === 'Enter' && useCheat();
+
+let remainingAttempts = 3;
+const codeInput = document.getElementById('codeInput');
+const unlockBtn = document.getElementById('unlockButton');
+const errorMsg = document.getElementById('errorMsg');
+
+function unlock() {
+  const input = codeInput.value.trim();
+  if (input === CORRECT_CODE) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'flex';
+    updateDisplay();
+  } else {
+    remainingAttempts--;
+    if (remainingAttempts > 0) {
+      errorMsg.innerText = `❌ 取件码错误！还剩 ${remainingAttempts} 次机会。`;
+      codeInput.value = '';
+      codeInput.focus();
+    } else {
+      errorMsg.innerText = '❌ 次数用完了！不过没关系，还有别的办法开启～';
+      unlockBtn.disabled = true;
+      codeInput.disabled = true;
+    }
+  }
+}
+
+unlockBtn.onclick = unlock;
+codeInput.onkeypress = e => e.key === 'Enter' && unlock();
+
+updateDisplay();
+</script>
+</body>
+</html>
